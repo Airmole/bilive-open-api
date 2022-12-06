@@ -11,6 +11,19 @@ use Airmole\BiliveOpenApi\Exception\Exception;
 class BiliveService extends Base
 {
     /**
+     * @param string $accessKeyId bilibili直播创作者服务中心 access_key_id
+     * @param string $accessKeySecred bilibili直播创作者服务中心 access_key_secred
+     * @throws Exception
+     */
+    public function __construct(string $accessKeyId = '', string $accessKeySecred = '')
+    {
+        if ($accessKeyId === '') throw new Exception('请传入accessKeyId配置参数');
+        if ($accessKeySecred === '') throw new Exception('请传入accessKeySecred配置参数');
+        $this->accessKeyId = $accessKeyId;
+        $this->accessKeySecred = $accessKeySecred;
+    }
+
+    /**
      * 项目开启
      * @param string $code 主播身份码
      * @param string $appId 项目ID
@@ -21,22 +34,22 @@ class BiliveService extends Base
     {
         return $this->bilivePost('/v2/app/start', [
             'code'   => $code,
-            'app_id' => $appId
+            'app_id' => (int)$appId
         ]);
     }
 
     /**
      * 项目关闭
      * @param string $appId 13位项目ID
-     * @param string $ganmeId 场次ID
+     * @param string $gameId 场次ID
      * @return array
      * @throws Exception
      */
-    public function end(string $appId, string $ganmeId): array
+    public function end(string $appId, string $gameId): array
     {
         return $this->bilivePost('/v2/app/end', [
             'app_id'  => $appId,
-            'game_id' => $ganmeId
+            'game_id' => $gameId
         ]);
     }
 

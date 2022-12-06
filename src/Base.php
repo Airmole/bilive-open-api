@@ -12,22 +12,14 @@ class Base
     public string $apiDomain = 'https://live-open.biliapi.com';
 
     /**
-     * @var string bilibili 创作者服务中心 access_key_id
+     * @var string bilibili直播创作者服务中心 access_key_id
      */
-    private string $accessKeyId;
+    protected string $accessKeyId;
 
     /**
-     * @var string bilibili 创作者服务中心 access_key_secred
+     * @var string bilibili直播创作者服务中心 access_key_secred
      */
-    private string $accessKeySecred;
-
-    public function __construct(string $accessKeyId = '', string $accessKeySecred = '')
-    {
-        if ($accessKeyId === '') throw new Exception('请传入accessKeyId配置参数');
-        if ($accessKeySecred === '') throw new Exception('请传入accessKeySecred配置参数');
-        $this->accessKeyId = $accessKeyId;
-        $this->accessKeySecred = $accessKeySecred;
-    }
+    protected string $accessKeySecred;
 
     /**
      * 发送POST请求
@@ -38,7 +30,7 @@ class Base
      */
     public function bilivePost(string $url, $post): array
     {
-        $post = is_string($post) ? $post : json_encode($post);
+        $post = is_array($post) ? json_encode($post) : $post;
         $headers = [
             'Accept'       => 'application/json',
             'Content-Type' => 'application/json'
