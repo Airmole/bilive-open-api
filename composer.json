@@ -1,0 +1,22 @@
+{
+    "name": "airmole/bilive-open-api",
+    "description": "bilibili直播内容开放平台API",
+    "type": "library",
+    "require": {
+        "php": ">=7.4",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "authors": [
+        {
+            "name": "Airmole",
+            "email": "admin@airmole.cn"
+        }
+    ],
+    "license": "GPL-3.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "Airmole\\BiliveOpenApi\\": "src/"
+        }
+    }
+}
