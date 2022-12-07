@@ -36,14 +36,17 @@ class Base
             'Content-Type' => 'application/json'
         ];
 
+        if ($post == '[]') $post = '{}';
+        $md5 = md5($post);
+
         // 带"x-bili-"前缀的自定义header
         $biliHeaders = [
-            'x-bili-content-md5'       => md5($post),
-            'x-bili-timestamp'         => time(),
-            'x-bili-signature-method'  => 'HMAC-SHA256',
-            'x-bili-signature-nonce'   => rand(),
             'x-bili-accesskeyid'       => $this->accessKeyId,
-            'x-bili-signature-version' => '1.0'
+            'x-bili-content-md5'       => $md5,
+            'x-bili-signature-method'  => 'HMAC-SHA256',
+            'x-bili-signature-nonce'   => uniqid(),
+            'x-bili-signature-version' => '1.0',
+            'x-bili-timestamp'         => (string)time()
         ];
 
         $headers = array_merge(
@@ -56,16 +59,27 @@ class Base
             $url = $this->apiDomain . $url;
         }
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        $headerStringArray = [];
+        foreach ($headers as $key => $value) {
+            $headerStringArray[] = "{$key}: $value";
+        }
+
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_URL => $url,
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => '',
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 5,
+            CURLOPT_FOLLOWLOCATION => true,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => 'POST',
+            CURLOPT_POSTFIELDS => $post,
+            CURLOPT_HTTPHEADER => $headerStringArray,
+        ));
+        $response = curl_exec($curl);
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        curl_close($curl);
         $data = json_decode($response, true);
         if (!is_array($data)) throw new Exception('请求哔哩哔哩接口接口错误' . $httpCode . $response);
         return $data;
@@ -76,17 +90,15 @@ class Base
      * @param array $params 待签名数据
      * @return string
      */
-    public function sign(array $params): string
+    function sign(array $params): string
     {
         ksort($params);
-        $string = '';
+        $signData = "";
         foreach ($params as $key => $value) {
-            $string = $string . $key . ':' . $value;
+            $signData .= $key . ":" . $value . "\n";
         }
-        $string = rtrim($string, "\n");
-
-        $sign = hash_hmac('sha256', $string, $this->accessKeySecred, true);
-        return base64_encode($sign);
+        $signData = rtrim($signData, "\n");
+        return hash_hmac("sha256", $signData, $this->accessKeySecred);
     }
 
 }

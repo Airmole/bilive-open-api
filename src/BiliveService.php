@@ -48,7 +48,7 @@ class BiliveService extends Base
     public function end(string $appId, string $gameId): array
     {
         return $this->bilivePost('/v2/app/end', [
-            'app_id'  => $appId,
+            'app_id'  => (int)$appId,
             'game_id' => $gameId
         ]);
     }
